@@ -16,12 +16,13 @@ on:
       GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
         required: true
 
+env:
+  job_location: ${{ inputs.module_name }}-jobs
+  global_job_name: ${{ inputs.module_name }}-jobs-${{ inputs.job_name }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      job_location: ${{ inputs.module_name }}-jobs
-      global_job_name: ${{ inputs.module_name }}-jobs-${{ inputs.job_name }}
     steps:
       - uses: actions/checkout@v2
 
@@ -48,7 +49,7 @@ jobs:
       - id: get_version_env
         name: Get job version and deployment env
         run: |
-          echo "::set-output name=version::$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ job_location }}:${{ global_job_name }}:currentVersion )"
+          echo "::set-output name=version::$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.job_location }}:${{ global_job_name }}:currentVersion )"
           echo "::set-output name=env::$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')"
 
       - name: Publish Dataflow Template
