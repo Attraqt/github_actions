@@ -62,9 +62,9 @@ jobs:
       - name: Deploy on dev environment
         uses: maxkomarychev/oction-create-deployment@v0.7.1
         with:
-          repo: xo-terragrunt-${{ steps.get_context.outputs.env }}
+          repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           ref: master
-          environment: ${{ steps.get_context.outputs.env }}
+          environment: ${{ steps.get_version_env.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
           task: ${{ env.global_job_name }}:${{ steps.get_version_env.outputs.version }}
           required_contexts: <<EMPTY>>
