@@ -2,7 +2,7 @@ name: Publish gRPC protobuf
 on:
   workflow_call:
     inputs:
-      protobuf_name:
+      module_name:
         required: true
         type: string
     secrets:
@@ -22,8 +22,8 @@ jobs:
       - name: Run Publish Task
         run: >
           ./gradlew \
-            -Pgpr.read.user=identities \
+            -Pgpr.read.user=${{ inputs.module_name }} \
             -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
             -Pgpr.user=publisher \
             -Pgpr.key=${{ secrets.GITHUB_TOKEN }} \
-             ${{ inputs.protobuf_name }}:publish
+             ${{ inputs.module_name }}-protobuf:publish
