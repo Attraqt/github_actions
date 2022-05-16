@@ -49,7 +49,7 @@ jobs:
       - id: get_version_env
         name: Get job version and deployment env
         run: |
-          echo "::set-output name=version::$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.job_location }}:${{ global_job_name }}:currentVersion )"
+          echo "::set-output name=version::$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet $job_location:$global_job_name:currentVersion )"
           echo "::set-output name=env::$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')"
 
       - name: Publish Dataflow Template
