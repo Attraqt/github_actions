@@ -54,10 +54,10 @@ jobs:
 
       - name: Publish Dataflow Template
         run: >
-          ./gradlew :${{ job_location }}:${{ global_job_name }}:run
+          ./gradlew :$job_location:$global_job_name:run
           -Pgpr.read.user=${{ inputs.module_name }}
           -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }}
-          --args="--runner=DataflowRunner --project=attraqt-xo --region=europe-west1 --stagingLocation=gs://xo-dataflow/staging --tempLocation=gs://xo-dataflow/tmp --templateLocation=gs://xo-dataflow/templates/${{ global_job_name }}/${{ steps.get_version_env.outputs.version }}"
+          --args="--runner=DataflowRunner --project=attraqt-xo --region=europe-west1 --stagingLocation=gs://xo-dataflow/staging --tempLocation=gs://xo-dataflow/tmp --templateLocation=gs://xo-dataflow/templates/$global_job_name/${{ steps.get_version_env.outputs.version }}"
 
       - name: Deploy on dev environment
         uses: maxkomarychev/oction-create-deployment@v0.7.1
@@ -66,5 +66,5 @@ jobs:
           ref: master
           environment: ${{ steps.get_context.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
-          task: ${{ global_job_name }}:${{ steps.get_context.outputs.version }}
+          task: $global_job_name:${{ steps.get_context.outputs.version }}
           required_contexts: <<EMPTY>>
