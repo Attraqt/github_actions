@@ -1,0 +1,29 @@
+name: Publish gRPC protobuf
+on:
+  workflow_call:
+    inputs:
+      protobuf_name:
+        required: true
+        type: string
+    secrets:
+      GH_PACKAGES_READ_ACCESS_TOKEN:
+        required: true
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run Publish Task
+        run: >
+          ./gradlew \
+            -Pgpr.read.user=identities \
+            -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
+            -Pgpr.user=publisher \
+            -Pgpr.key=${{ secrets.GITHUB_TOKEN }} \
+             ${{ inputs.protobuf_name }}:publish

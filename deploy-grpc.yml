@@ -1,0 +1,66 @@
+name: Deploy gRPC service
+on:
+  workflow_call:
+    inputs:
+      grpc_module:
+        required: true
+        type: string
+    secrets:
+      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
+        required: true
+      GH_PACKAGES_READ_ACCESS_TOKEN:
+        required: true
+      GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
+        required: true
+
+jobs:
+  publish_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Fetch tag history
+        run: git fetch --prune --unshallow
+        if: github.ref == 'refs/heads/master'
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('gradle/**') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          export_default_credentials: true
+
+      - run: gcloud auth configure-docker
+
+      - name: Get docker tag and deployment env
+        id: get_context
+        run: |
+          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ inputs.grpc_module }}:currentVersion )
+          echo "::set-output name=version::$VERSION"
+          echo "::set-output name=image_name::eu.gcr.io/attraqt-xo/${{ inputs.grpc_module }}:$VERSION"
+          echo "::set-output name=env::$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')"
+
+      - name: Build Docker image
+        run: ./gradlew -Pgpr.read.user=identities -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ inputs.grpc_module }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }}
+
+      - name: Push Docker images
+        run: docker push ${{ steps.get_context.outputs.image_name }}
+
+      - name: Deploy on dev environment
+        uses: maxkomarychev/oction-create-deployment@v0.7.1
+        with:
+          repo: xo-terragrunt-${{ steps.get_context.outputs.env }}
+          ref: master
+          environment: ${{ steps.get_context.outputs.env }}
+          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          task: ${{ inputs.grpc_module }}:${{ steps.get_context.outputs.version }}
+          required_contexts: <<EMPTY>>
