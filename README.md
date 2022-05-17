@@ -16,17 +16,22 @@ For now, there are three workflows :
  - _deploy job_, in order to deploy a specific job on Dataflow.
  - _publish protobuf_, in order to publish a new protobuf contract.
 
+
 ## :green_book: How to
 
 We will use the [activities repository](https://github.com/Attraqt/activities/tree/master/.github/workflows) in order to demonstrate the following examples.
 
-### [Deploy grpc](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-grpc.yml)
+<details>
+
+<summary> ### [Deploy grpc](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-grpc.yml)
+
+</summary>
 
 #### Inputs
 
-| Input       | Description        | Example        |
-|-------------|--------------------|----------------|
-| module_name | Name of the module | **activities** |
+| Input       | Description        | Example      |
+|-------------|--------------------|--------------|
+| **module_name** | Name of the module | _activities_ |
 
 #### Secrets
 
@@ -36,14 +41,16 @@ We will use the [activities repository](https://github.com/Attraqt/activities/tr
 | GH_PACKAGES_READ_ACCESS_TOKEN       |
 | GH_DEPLOYMENT_CREATION_ACCESS_TOKEN |
 
+</details>
+
 ### [Deploy job](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-job.yml)
 
 #### Inputs
 
-| Input       | Description        | Example                                                                                                                                  |
-|-------------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| module_name | Name of the module | **activities**                                                                                                                           |
-| job_name    | Name of the job    | **enricher**, for [_deploy-jobs-enricher_](https://github.com/Attraqt/activities/blob/master/.github/workflows/deploy-jobs-enricher.yml) |
+| Input       | Description        | Example                                                                                                                                |
+|-------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| **module_name** | Name of the module | _activities_                                                                                                                           |
+| **job_name**    | Name of the job    | _enricher_, for [_deploy-jobs-enricher_](https://github.com/Attraqt/activities/blob/master/.github/workflows/deploy-jobs-enricher.yml) |
 
 #### Secrets
 
@@ -57,9 +64,9 @@ We will use the [activities repository](https://github.com/Attraqt/activities/tr
 
 #### Inputs
 
-| Input       | Description        | Example        |
-|-------------|--------------------|----------------|
-| module_name | Name of the module | **activities** |
+| Input       | Description        | Example      |
+|-------------|--------------------|--------------|
+| **module_name** | Name of the module | _activities_ |
 
 #### Secrets
 
