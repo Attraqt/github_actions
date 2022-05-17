@@ -16,8 +16,7 @@ on:
       GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
         required: true
       ARTIFACTORY_PASSWORD:
-        required: false
-        default: ''
+        required: true
 
 env:
   job_location: ${{ inputs.module_name }}-jobs
