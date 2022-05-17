@@ -23,14 +23,14 @@ We will use the [activities repository](https://github.com/Attraqt/activities/tr
 
 <details>
 
-<summary> ### [Deploy grpc](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-grpc.yml)
+<summary> Deploy grpc </summary>
 
-</summary>
+The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-grpc.yml).
 
 #### Inputs
 
-| Input       | Description        | Example      |
-|-------------|--------------------|--------------|
+| Input           | Description        | Example      |
+|-----------------|--------------------|--------------|
 | **module_name** | Name of the module | _activities_ |
 
 #### Secrets
@@ -43,7 +43,11 @@ We will use the [activities repository](https://github.com/Attraqt/activities/tr
 
 </details>
 
-### [Deploy job](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-job.yml)
+<details>
+
+<summary> Deploy job </summary>
+
+The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/deploy-job.yml).
 
 #### Inputs
 
@@ -60,7 +64,13 @@ We will use the [activities repository](https://github.com/Attraqt/activities/tr
 | GH_PACKAGES_READ_ACCESS_TOKEN       |
 | GH_DEPLOYMENT_CREATION_ACCESS_TOKEN |
 
-### [Publish protobuf](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/publish-protobuf.yml)
+</details>
+
+<details>
+
+<summary>Publish protobuf</summary>
+
+The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/publish-protobuf.yml).
 
 #### Inputs
 
@@ -74,3 +84,5 @@ We will use the [activities repository](https://github.com/Attraqt/activities/tr
 |-------------------------------------|
 | GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   |
 | GITHUB_TOKEN                        |
+
+</details>
