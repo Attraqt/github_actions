@@ -29,19 +29,20 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Inputs
 
-| Input           | Description        | Example      |
-|-----------------|--------------------|--------------|
-| **module_name** | Name of the module | _identities_ |
-| **service_name** | Name of the service | _config-grpc_, for [deploy-config-grpc](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-config-grpc.yml) |
+| Input                 | Description                                                             | Type    | Example                                                                                                                             |
+|-----------------------|-------------------------------------------------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **module_name**       | Name of the module                                                      | String  | _identities_                                                                                                                        |
+| **service_name**      | Name of the service                                                     | String  | _config-grpc_, for [deploy-config-grpc](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-config-grpc.yml) |
+| **deploy_on_gateway** | To set if a docker image has to be pushed on the gateway (**optional**) | Boolean | _true_, for [deploy-grpc **in items**](https://github.com/Attraqt/items/blob/master/.github/workflows/deploy-grpc.yml)              |
 
 
 #### Secrets
 
-| Secret                              | 
-|-------------------------------------|
-| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   |
-| GH_PACKAGES_READ_ACCESS_TOKEN       |
-| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN |
+| Secret                              | Required           | 
+|-------------------------------------|--------------------|
+| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   | :white_check_mark: |
+| GH_PACKAGES_READ_ACCESS_TOKEN       | :white_check_mark: |
+| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN | :white_check_mark: |
 
 </details>
 
@@ -53,18 +54,19 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Inputs
 
-| Input       | Description        | Example                                                                                                                                                  |
-|-------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **module_name** | Name of the module | _identities_                                                                                                                                             |
-| **job_name**    | Name of the job    | _user-merges-router_, for [deploy-jobs-user-merges-router](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-jobs-user-merges-router.yml) |
+| Input           | Description        | Type   | Example                                                                                                                                                            |
+|-----------------|--------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **module_name** | Name of the module | String | _identities_                                                                                                                                                       |
+| **job_name**    | Name of the job    | String | _user-merges-router_, for [deploy-jobs-user-merges-router](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-jobs-user-merges-router.yml) |
 
 #### Secrets
 
-| Secret                              | 
-|-------------------------------------|
-| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   |
-| GH_PACKAGES_READ_ACCESS_TOKEN       |
-| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN |
+| Secret                              | Required                      |
+|-------------------------------------|-------------------------------|
+| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   | :white_check_mark:            |
+| GH_PACKAGES_READ_ACCESS_TOKEN       | :white_check_mark:            |
+| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN | :white_check_mark:            |
+| ARTIFACTORY_PASSWORD                | :negative_squared_cross_mark: |
 
 </details>
 
@@ -76,15 +78,15 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Inputs
 
-| Input            | Description         | Example                                                                                                                             |
-|------------------|---------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| **module_name**  | Name of the module  | _identities_                                                                                                                        |
+| Input            | Description         | Type   | Example                                                                                                                             |
+|------------------|---------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **module_name**  | Name of the module  | String | _identities_                                                                                                                        |
 
 #### Secrets
 
-| Secret                              | 
-|-------------------------------------|
-| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   |
-| GITHUB_TOKEN                        |
+| Secret                            | Required           | 
+|-----------------------------------|--------------------|
+| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY | :white_check_mark: |
+| GITHUB_TOKEN                      | :white_check_mark: |
 
 </details>
