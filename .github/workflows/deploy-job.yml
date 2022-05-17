@@ -60,7 +60,7 @@ jobs:
           -Pgpr.read.user=${{ inputs.module_name }}
           -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }}
           --args="--runner=DataflowRunner --project=attraqt-xo --region=europe-west1 --stagingLocation=gs://xo-dataflow/staging --tempLocation=gs://xo-dataflow/tmp --templateLocation=gs://xo-dataflow/templates/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
-        if: !secrets.ARTIFACTORY_PASSWORD
+        if: !secrets.ARTIFACTORY_PASSWORD == ''
 
       - name: Publish Dataflow Template
         run: >
@@ -70,7 +70,7 @@ jobs:
           -Partifactory.user=travis-npm
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           --args="--runner=DataflowRunner --project=attraqt-xo --region=europe-west1 --stagingLocation=gs://xo-dataflow/staging --tempLocation=gs://xo-dataflow/tmp --templateLocation=gs://xo-dataflow/templates/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
-        if: secrets.ARTIFACTORY_PASSWORD
+        if: secrets.ARTIFACTORY_PASSWORD != ''
 
       - name: Deploy on dev environment
         uses: maxkomarychev/oction-create-deployment@v0.7.1
