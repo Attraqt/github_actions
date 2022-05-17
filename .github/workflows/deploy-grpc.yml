@@ -18,7 +18,7 @@ on:
         required: true
 
 env:
-  grpc_name: ${{ inputs.module_name }}${{ inputs.environment_name != '' && '-${{ inputs.environment_name }}' || '' }}-grpc
+  grpc_name: ${{ inputs.module_name }}${{ inputs.environment_name != '' && "-${{ inputs.environment_name }}" || "" }}-grpc
 
 jobs:
   publish_and_deploy:
