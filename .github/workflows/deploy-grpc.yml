@@ -8,6 +8,10 @@ on:
       service_name:
         required: true
         type: string
+      deploy_on_gateway:
+        required: false
+        type: boolean
+        default: false
     secrets:
       GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
         required: true
@@ -53,13 +57,22 @@ jobs:
           VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.final_name }}:currentVersion )
           echo "::set-output name=version::$VERSION"
           echo "::set-output name=image_name::eu.gcr.io/attraqt-xo/${{ env.final_name }}:$VERSION"
+          echo "::set-output name=gateway_image_name::eu.gcr.io/attraqt-xo/items-grpc-gateway:$VERSION"
           echo "::set-output name=env::$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')"
 
       - name: Build Docker image
         run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }}
 
-      - name: Push Docker images
+      - name: Build gateway Docker image
+        run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.gateway_image_name }}
+        if: ${{ inputs.deploy_on_gateway == 'true' }}
+
+      - name: Push Docker image
         run: docker push ${{ steps.get_context.outputs.image_name }}
+
+      - name: Push gateway Docker image
+        run: docker push ${{ steps.get_context.outputs.gateway_image_name }}
+        if: ${{ inputs.deploy_on_gateway == 'true' }}
 
       - name: Deploy on dev environment
         uses: maxkomarychev/oction-create-deployment@v0.7.1
