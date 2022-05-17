@@ -2,7 +2,7 @@ name: Deploy gRPC service
 on:
   workflow_call:
     inputs:
-      grpc_module:
+      module_name:
         required: true
         type: string
     secrets:
@@ -12,6 +12,9 @@ on:
         required: true
       GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
         required: true
+
+env:
+  grpc_name: ${{ inputs.module_name }}-grpc
 
 jobs:
   publish_and_deploy:
@@ -44,13 +47,13 @@ jobs:
       - name: Get docker tag and deployment env
         id: get_context
         run: |
-          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ inputs.grpc_module }}:currentVersion )
+          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.grpc_name }}:currentVersion )
           echo "::set-output name=version::$VERSION"
-          echo "::set-output name=image_name::eu.gcr.io/attraqt-xo/${{ inputs.grpc_module }}:$VERSION"
+          echo "::set-output name=image_name::eu.gcr.io/attraqt-xo/${{ env.grpc_name }}:$VERSION"
           echo "::set-output name=env::$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')"
 
       - name: Build Docker image
-        run: ./gradlew -Pgpr.read.user=identities -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ inputs.grpc_module }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }}
+        run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.grpc_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }}
 
       - name: Push Docker images
         run: docker push ${{ steps.get_context.outputs.image_name }}
@@ -62,5 +65,5 @@ jobs:
           ref: master
           environment: ${{ steps.get_context.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
-          task: ${{ inputs.grpc_module }}:${{ steps.get_context.outputs.version }}
+          task: ${{ env.grpc_name }}:${{ steps.get_context.outputs.version }}
           required_contexts: <<EMPTY>>
