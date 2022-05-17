@@ -17,6 +17,7 @@ on:
         required: true
       ARTIFACTORY_PASSWORD:
         required: false
+        default: ''
 
 env:
   job_location: ${{ inputs.module_name }}-jobs
