@@ -5,6 +5,10 @@ on:
       module_name:
         required: true
         type: string
+      environment_name:
+        required: false
+        type: string
+        default: ""
     secrets:
       GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
         required: true
@@ -14,7 +18,7 @@ on:
         required: true
 
 env:
-  grpc_name: ${{ inputs.module_name }}-grpc
+  grpc_name: ${{ inputs.module_name }}$([ '${{ inputs.environment_name }}' != '' ] && echo '-${{ inputs.environment_name }}' || echo '')-grpc
 
 jobs:
   publish_and_deploy:
