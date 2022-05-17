@@ -19,7 +19,7 @@ For now, there are three workflows :
 
 ## :green_book: How to
 
-We will use the [activities repository](https://github.com/Attraqt/activities/tree/master/.github/workflows) in order to demonstrate the following examples.
+We will use the [identities repository](https://github.com/Attraqt/identities/tree/master/.github/workflows) in order to demonstrate the following examples.
 
 <details>
 
@@ -31,7 +31,7 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 | Input           | Description        | Example      |
 |-----------------|--------------------|--------------|
-| **module_name** | Name of the module | _activities_ |
+| **module_name** | Name of the module | _identities_ |
 
 #### Secrets
 
@@ -51,10 +51,10 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Inputs
 
-| Input       | Description        | Example                                                                                                                                |
-|-------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| **module_name** | Name of the module | _activities_                                                                                                                           |
-| **job_name**    | Name of the job    | _enricher_, for [_deploy-jobs-enricher_](https://github.com/Attraqt/activities/blob/master/.github/workflows/deploy-jobs-enricher.yml) |
+| Input       | Description        | Example                                                                                                                                                  |
+|-------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **module_name** | Name of the module | _identities_                                                                                                                                             |
+| **job_name**    | Name of the job    | _user-merges-router_, for [deploy-jobs-user-merges-router](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-jobs-user-merges-router.yml) |
 
 #### Secrets
 
@@ -74,9 +74,10 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Inputs
 
-| Input       | Description        | Example      |
-|-------------|--------------------|--------------|
-| **module_name** | Name of the module | _activities_ |
+| Input                | Description             | Example                                                                                                                        |
+|----------------------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| **module_name**      | Name of the module      | _identities_                                                                                                                   |
+| **environment_name** | Name of the environment | _config_, for [deploy-config-grpc](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-config-grpc.yml) |
 
 #### Secrets
 
