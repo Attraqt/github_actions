@@ -5,7 +5,7 @@ on:
       module_name:
         required: true
         type: string
-      suffix_name:
+      service_name:
         required: true
         type: string
     secrets:
@@ -17,7 +17,7 @@ on:
         required: true
 
 env:
-  final_name: ${{ inputs.module_name }}-${{ inputs.suffix_name }}
+  final_name: ${{ inputs.module_name }}-${{ inputs.service_name }}
 
 jobs:
   publish_and_deploy:

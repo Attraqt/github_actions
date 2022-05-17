@@ -74,10 +74,10 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Inputs
 
-| Input                | Description             | Example                                                                                                                        |
-|----------------------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| **module_name**      | Name of the module      | _identities_                                                                                                                   |
-| **environment_name** | Name of the environment | _config_, for [deploy-config-grpc](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-config-grpc.yml) |
+| Input            | Description         | Example                                                                                                                             |
+|------------------|---------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **module_name**  | Name of the module  | _identities_                                                                                                                        |
+| **service_name** | Name of the service | _config-grpc_, for [deploy-config-grpc](https://github.com/Attraqt/identities/blob/master/.github/workflows/deploy-config-grpc.yml) |
 
 #### Secrets
 
