@@ -65,14 +65,14 @@ jobs:
 
       - name: Build gateway Docker image
         run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.gateway_image_name }}
-        if: ${{ inputs.deploy_on_gateway == 'true' }}
+        if: inputs.deploy_on_gateway
 
       - name: Push Docker image
         run: docker push ${{ steps.get_context.outputs.image_name }}
 
       - name: Push gateway Docker image
         run: docker push ${{ steps.get_context.outputs.gateway_image_name }}
-        if: ${{ inputs.deploy_on_gateway == 'true' }}
+        if: inputs.deploy_on_gateway
 
       - name: Deploy on dev environment
         uses: maxkomarychev/oction-create-deployment@v0.7.1
