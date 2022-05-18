@@ -1,0 +1,79 @@
+name: Publish grpc
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+    secrets:
+      ARTIFACTORY_USER:
+        required: true
+      ARTIFACTORY_PASSWORD:
+        required: true
+      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
+        required: true
+      GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN:
+        required: true
+      GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
+        required: true
+
+env:
+  final_name: search-${{ inputs.service_name }}
+
+jobs:
+  publish_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Fetch tag history
+        run: git fetch --prune --unshallow
+        if: contains(fromJson('["refs/heads/develop", "refs/heads/master"]'), github.ref)
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Install gcloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          export_default_credentials: true
+
+      - name: Configure docker authentication
+        run: gcloud auth configure-docker --quiet
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # If the commit is tagged, use it. Else, use the commit hash as tag
+      # If develop branch, use 'dev' terragrunt project. Else, use 'prod' project
+      # If develop branch, use 'dev' environment. If master branch and untagged, use 'staging' environment. Else, use 'prod'
+      - name: Get deployment tag, project and environment
+        id: tag_env
+        run: |
+          echo "::set-output name=tag::$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ inputs.final_name }}:currentVersion )"
+          echo "::set-output name=project::$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'dev' || echo 'prod')"
+          echo "::set-output name=env::$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)"
+
+      - name: Build & Publish Docker image
+        run: |
+          ./gradlew \
+            -Pgpr.read.user=search \
+            -Pgpr.read.key=${{ secrets.GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN }} \
+            -Partifactory.user=${{ secrets.ARTIFACTORY_USER }} \
+            -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
+            -Pdocker.tag=${{ steps.tag_env.outputs.tag }} \
+            :${{ inputs.final_name }}:dockerPushImage --console=plain
+
+      - name: Deploy
+        uses: maxkomarychev/oction-create-deployment@v0.7.1
+        with:
+          required_contexts: <<EMPTY>>
+          repo: xo-terragrunt-${{ steps.tag_env.outputs.project }}
+          ref: master
+          environment: ${{ steps.tag_env.outputs.env }}
+          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          task: ${{ inputs.final_name }}:${{ steps.tag_env.outputs.tag }}
