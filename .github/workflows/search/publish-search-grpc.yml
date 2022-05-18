@@ -54,7 +54,7 @@ jobs:
       - name: Get deployment tag, project and environment
         id: tag_env
         run: |
-          echo "::set-output name=tag::$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ inputs.final_name }}:currentVersion )"
+          echo "::set-output name=tag::$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.final_name }}:currentVersion )"
           echo "::set-output name=project::$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'dev' || echo 'prod')"
           echo "::set-output name=env::$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)"
 
@@ -66,7 +66,7 @@ jobs:
             -Partifactory.user=${{ secrets.ARTIFACTORY_USER }} \
             -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
             -Pdocker.tag=${{ steps.tag_env.outputs.tag }} \
-            :${{ inputs.final_name }}:dockerPushImage --console=plain
+            :${{ env.final_name }}:dockerPushImage --console=plain
 
       - name: Deploy
         uses: maxkomarychev/oction-create-deployment@v0.7.1
@@ -76,4 +76,4 @@ jobs:
           ref: master
           environment: ${{ steps.tag_env.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
-          task: ${{ inputs.final_name }}:${{ steps.tag_env.outputs.tag }}
+          task: ${{ env.final_name }}:${{ steps.tag_env.outputs.tag }}
