@@ -61,12 +61,12 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 
 #### Secrets
 
-| Secret                              | Required                      |
-|-------------------------------------|-------------------------------|
-| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   | :white_check_mark:            |
-| GH_PACKAGES_READ_ACCESS_TOKEN       | :white_check_mark:            |
-| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN | :white_check_mark:            |
-| ARTIFACTORY_PASSWORD                | :negative_squared_cross_mark: |
+| Secret                              | Required           |
+|-------------------------------------|--------------------|
+| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY   | :white_check_mark: |
+| GH_PACKAGES_READ_ACCESS_TOKEN       | :white_check_mark: |
+| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN | :white_check_mark: |
+| ARTIFACTORY_PASSWORD                | :x:                |
 
 </details>
 
@@ -88,5 +88,60 @@ The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/
 |-----------------------------------|--------------------|
 | GCP_PUBLISHER_SERVICE_ACCOUNT_KEY | :white_check_mark: |
 | GITHUB_TOKEN                      | :white_check_mark: |
+
+</details>
+
+<details>
+
+<summary>Search workflows</summary>
+
+<details>
+
+<summary>Publish grpc</summary>
+
+The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/publish-search-grpc.yml).
+
+#### Inputs 
+
+| Input            | Description         | Type   | Example                                                                                                                                       |
+|------------------|---------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| **service_name** | Name of the service | String | _serving-es-grpc_, for [search-serving-es-grpc](https://github.com/Attraqt/search/blob/develop/.github/workflows/publish-serving-es-grpc.yml) |
+
+#### Secrets
+
+| Secret                                | Required           | 
+|---------------------------------------|--------------------|
+| ARTIFACTORY_USER                      | :white_check_mark: |
+| ARTIFACTORY_PASSWORD                  | :white_check_mark: |
+| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY     | :white_check_mark: |
+| GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN | :white_check_mark: |
+| GH_DEPLOYMENT_CREATION_ACCESS_TOKEN   | :white_check_mark: |
+
+</details>
+
+<details>
+
+<summary>Publish job</summary>
+
+The workflow is located [here](https://github.com/Attraqt/github_workflows/blob/main/.github/workflows/publish-search-job.yml).
+
+#### Inputs
+
+| Input                 | Description                                                 | Type                | Example                                                                                                                                       |
+|-----------------------|-------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| **job_name**          | Name of the job                                             | String              | _es-indexer_, for [search-jobs-es-indexer](https://github.com/Attraqt/search/blob/develop/.github/workflows/publish-es-import-jobs.yml)       |
+| **java_version**      | Java version                                                | String, '8' or '11' | _8_, for [search-jobs-es-indexer](https://github.com/Attraqt/search/blob/develop/.github/workflows/publish-es-import-jobs.yml)                |
+| **fetch_environment** | To set if a job has to fetch the environment (**optional**) | Boolean             | _true_, for [search-jobs-es-indexer](https://github.com/Attraqt/search/blob/develop/.github/workflows/publish-es-import-jobs.yml) for example |
+
+#### Secrets
+
+| Secret                                | Required           | 
+|---------------------------------------|--------------------|
+| ARTIFACTORY_USER                      | :white_check_mark: |
+| ARTIFACTORY_PASSWORD                  | :white_check_mark: |
+| GCP_PUBLISHER_SERVICE_ACCOUNT_KEY     | :white_check_mark: |
+| GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN | :white_check_mark: |
+
+</details>
 
 </details>
