@@ -81,7 +81,7 @@ jobs:
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           ${{ env.final_name }}:bootBuildImage 
           --imageName=${{ steps.get_context.outputs.image_name }}
-          if: ${{ env.artifactory_password != null }}
+        if: ${{ env.artifactory_password != null }}
 
       - name: Build gateway Docker image
         run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.gateway_image_name }}
