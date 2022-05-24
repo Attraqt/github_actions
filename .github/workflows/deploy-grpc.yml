@@ -77,7 +77,7 @@ jobs:
           ./gradlew 
           -Pgpr.read.user=${{ inputs.module_name }} 
           -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }}
-          -Partifactory.user=travis-npm
+          -Partifactory.user=travis
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           ${{ env.final_name }}:bootBuildImage 
           --imageName=${{ steps.get_context.outputs.image_name }}
