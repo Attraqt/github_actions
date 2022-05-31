@@ -17,7 +17,7 @@ function defaultParse(inputName: string): any | undefined {
   return inputValue || undefined
 }
 
-function sleep(ms: number) {
+async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 

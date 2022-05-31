@@ -22,6 +22,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const github = __importStar(require("@actions/github"));
@@ -38,31 +47,46 @@ function defaultParse(inputName) {
     }
     return inputValue || undefined;
 }
-const token = defaultParse('token');
-const owner = defaultParse('owner');
-const repo = defaultParse('repo');
-const deploymentId = defaultParse('deployment_id');
-const requestWithAuth = request_1.request.defaults({
-    headers: {
-        authorization: `Bearer ${token}`
-    },
-    mediaType: {
-        previews: ['ant-man']
-    }
-});
-requestWithAuth('GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses', {
-    token,
-    owner,
-    repo,
-    deployment_id: deploymentId
-})
-    .then(result => {
-    console.log('result', result);
-    if (result && result.data) {
-        core.setOutput('data', result.data);
-    }
-})
-    .catch(error => {
-    console.log('error', error);
-    core.setFailed(error.message);
-});
+function sleep(ms) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    });
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const token = defaultParse('token');
+        const owner = defaultParse('owner');
+        const repo = defaultParse('repo');
+        const deploymentId = defaultParse('deployment_id');
+        const waitingTime = defaultParse('waiting_time') || 10;
+        const stop = false;
+        const requestWithAuth = request_1.request.defaults({
+            headers: {
+                authorization: `Bearer ${token}`
+            },
+            mediaType: {
+                previews: ['ant-man']
+            }
+        });
+        while (!stop) {
+            try {
+                const result = yield requestWithAuth('GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses', {
+                    token,
+                    owner,
+                    repo,
+                    deployment_id: deploymentId
+                });
+                console.log('result', result);
+                if (result && result.data) {
+                    core.setOutput('data', result.data);
+                }
+            }
+            catch (error) {
+                console.log('error', error);
+                core.setFailed(error.message);
+            }
+            yield sleep(waitingTime * 1000);
+        }
+    });
+}
+run();
