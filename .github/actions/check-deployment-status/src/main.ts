@@ -17,36 +17,50 @@ function defaultParse(inputName: string): any | undefined {
   return inputValue || undefined
 }
 
-const token = defaultParse('token')
-const owner = defaultParse('owner')
-const repo = defaultParse('repo')
-const deploymentId = defaultParse('deployment_id')
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
-const requestWithAuth = request.defaults({
-  headers: {
-    authorization: `Bearer ${token}`
-  },
-  mediaType: {
-    previews: ['ant-man']
-  }
-})
+async function run(): Promise<void> {
+  const token = defaultParse('token')
+  const owner = defaultParse('owner')
+  const repo = defaultParse('repo')
+  const deploymentId = defaultParse('deployment_id')
+  const waitingTime = defaultParse('waiting_time') || 10
 
-requestWithAuth(
-  'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
-  {
-    token,
-    owner,
-    repo,
-    deployment_id: deploymentId
-  }
-)
-  .then(result => {
-    console.log('result', result)
-    if (result && result.data) {
-      core.setOutput('data', result.data)
+  const stop = false
+
+  const requestWithAuth = request.defaults({
+    headers: {
+      authorization: `Bearer ${token}`
+    },
+    mediaType: {
+      previews: ['ant-man']
     }
   })
-  .catch(error => {
-    console.log('error', error)
-    core.setFailed(error.message)
-  })
+
+  while (!stop) {
+    try {
+      const result = await requestWithAuth(
+        'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
+        {
+          token,
+          owner,
+          repo,
+          deployment_id: deploymentId
+        }
+      )
+      console.log('result', result)
+      if (result && result.data) {
+        core.setOutput('data', result.data)
+      }
+    } catch (error: any) {
+      console.log('error', error)
+      core.setFailed(error.message)
+    }
+
+    await sleep(waitingTime * 1000)
+  }
+}
+
+run()
