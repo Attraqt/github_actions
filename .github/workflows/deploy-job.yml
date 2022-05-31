@@ -78,7 +78,7 @@ jobs:
 
       - name: Deploy
         id: deploy
-        uses: maxkomarychev/oction-create-deployment@v0.7.1
+        uses: Attraqt/github_workflows/.github/actions/deploy@feature/XO-2817-check-jobs-status
         with:
           repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           ref: master
@@ -86,15 +86,3 @@ jobs:
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
           task: ${{ env.global_job_name }}:${{ steps.get_version_env.outputs.version }}
           required_contexts: <<EMPTY>>
-
-      - name: Deployment's id
-        run: |
-          echo ${{ steps.deploy.outputs.id }}
-
-      - name: Checking statuses
-        id: check_status
-        uses: Attraqt/github_workflows/.github/actions/check-deployment-status@feature/XO-2817-check-jobs-status
-        with:
-          repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
-          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
-          deployment_id: ${{ steps.deploy.outputs.id }}
