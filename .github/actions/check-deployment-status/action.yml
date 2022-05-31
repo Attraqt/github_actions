@@ -1,0 +1,27 @@
+name: 'Check Deployment Status'
+author: 'Ambroise Mullie'
+description: 'Check Deployment status after a Github API call'
+inputs:
+  token:
+    description: |
+      Token to authenticate the request
+    required: true
+  deployment_id:
+    description: |
+      deployment id parameter
+    required: true
+  owner:
+    description: |
+      owner parameter
+    required: false
+  repo:
+    description: |
+      repo parameter
+    required: false
+  waiting_time:
+    description: "Waiting time (in seconds) before sending a new request to check deployment status."
+    required: false
+    default: 10
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

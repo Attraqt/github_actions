@@ -91,3 +91,10 @@ jobs:
         run: |
           echo ${{ steps.deploy.outputs.id }}
 
+      - name: Checking statuses
+        id: check_status
+        uses: ./../actions/check-deployment-status
+        with:
+          repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
+          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          deployment_id: ${{ steps.deploy.outputs.id }}
