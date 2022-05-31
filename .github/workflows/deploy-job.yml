@@ -91,11 +91,9 @@ jobs:
         run: |
           echo ${{ steps.deploy.outputs.id }}
 
-      - uses: actions/checkout@v3
-
       - name: Checking statuses
         id: check_status
-        uses: Attraqt/github_workflows/.github/actions/check-deployment-status/action.yml@feature/XO-2817-check-jobs-status
+        uses: actions/check-deployment-status
         with:
           repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
