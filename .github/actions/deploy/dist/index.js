@@ -157,6 +157,12 @@ function run() {
                             if (['failure', 'error'].includes(lastStatus.state)) {
                                 core.setFailed(lastStatus.description);
                             }
+                            else if (lastStatus.state === "success") {
+                                console.log(lastStatus.description);
+                            }
+                            else {
+                                console.log("Inactive job.");
+                            }
                         }
                     }
                 }
