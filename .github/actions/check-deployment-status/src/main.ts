@@ -28,7 +28,7 @@ async function run(): Promise<void> {
   const deploymentId = defaultParse('deployment_id')
   const waitingTime = defaultParse('waiting_time') || 10
 
-  const stop = false
+  let stop = false
 
   const requestWithAuth = request.defaults({
     headers: {
@@ -52,11 +52,25 @@ async function run(): Promise<void> {
       )
       console.log('result', result)
       if (result && result.data) {
-        core.setOutput('data', result.data)
+        if (result.data.length > 0) {
+          const lastStatus = result.data[0]
+          if (
+            ['success', 'failure', 'error', 'inactive'].includes(
+              lastStatus.state
+            )
+          ) {
+            console.log('Stopping...')
+            stop = true
+            if (['failure', 'error'].includes(lastStatus.state)) {
+              core.setFailed(lastStatus.description)
+            }
+          }
+        }
       }
     } catch (error: any) {
       console.log('error', error)
       core.setFailed(error.message)
+      stop = true
     }
 
     await sleep(waitingTime * 1000)
