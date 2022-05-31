@@ -91,6 +91,8 @@ jobs:
         run: |
           echo ${{ steps.deploy.outputs.id }}
 
+      - uses: actions/checkout@v3
+
       - name: Checking statuses
         id: check_status
         uses: Attraqt/github_workflows/.github/actions/check-deployment-status/action.yml@feature/XO-2817-check-jobs-status
