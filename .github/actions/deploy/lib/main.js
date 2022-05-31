@@ -132,7 +132,7 @@ function run() {
             console.log('error', error);
             core.setFailed(error.message);
         }
-        console.log(`Deploying on ${repo}... (https://github.com/${owner}/${repo})`);
+        console.log(`Deploying on ${repo}... (https://github.com/${owner}/${repo}/actions)`);
         //getting statuses and checking if running or over
         while (!stop) {
             try {
@@ -150,11 +150,11 @@ function run() {
                             if (['failure', 'error'].includes(lastStatus.state)) {
                                 core.setFailed(lastStatus.description);
                             }
-                            else if (lastStatus.state === "success") {
+                            else if (lastStatus.state === 'success') {
                                 console.log(lastStatus.description);
                             }
                             else {
-                                console.log("Inactive job.");
+                                console.log('Inactive job.');
                             }
                         }
                     }

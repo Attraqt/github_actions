@@ -108,7 +108,9 @@ async function run(): Promise<void> {
     core.setFailed(error.message)
   }
 
-  console.log(`Deploying on ${repo}... (https://github.com/${owner}/${repo})`)
+  console.log(
+    `Deploying on ${repo}... (https://github.com/${owner}/${repo}/actions)`
+  )
 
   //getting statuses and checking if running or over
   while (!stop) {
