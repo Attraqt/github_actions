@@ -93,7 +93,7 @@ jobs:
 
       - name: Checking statuses
         id: check_status
-        uses: Attraqt/github_workflow/.github/actions/check-deployment-status@feature/XO-2817-check-jobs-status
+        uses: Attraqt/github_workflows/.github/actions/check-deployment-status@feature/XO-2817-check-jobs-status
         with:
           repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
