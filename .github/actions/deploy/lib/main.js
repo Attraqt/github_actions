@@ -132,6 +132,7 @@ function run() {
             console.log('error', error);
             core.setFailed(error.message);
         }
+        console.log(`Deploying on ${repo}... (https://github.com/${owner}/${repo})`);
         //getting statuses and checking if running or over
         while (!stop) {
             try {
@@ -139,14 +140,12 @@ function run() {
                     token,
                     owner,
                     repo,
-                    'deployment_id': deploymentId
+                    deployment_id: deploymentId
                 });
-                console.log('result', result);
                 if (result && result.data) {
                     if (result.data.length > 0) {
                         const lastStatus = result.data[0];
                         if (['success', 'failure', 'error', 'inactive'].includes(lastStatus.state)) {
-                            console.log('Stopping...');
                             stop = true;
                             if (['failure', 'error'].includes(lastStatus.state)) {
                                 core.setFailed(lastStatus.description);
@@ -156,7 +155,6 @@ function run() {
                 }
             }
             catch (error) {
-                console.log('error', error);
                 core.setFailed(error.message);
                 stop = true;
             }
