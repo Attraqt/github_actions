@@ -163,11 +163,7 @@ function run() {
                 }
             }
             catch (error) {
-                console.log(error);
-                console.log(error.response);
-                console.log(error.response.status);
-                core.setFailed(error.message);
-                stop = true;
+                stop = error.response.status !== 404;
             }
             if (!stop)
                 yield sleep(waitingTime * 1000);

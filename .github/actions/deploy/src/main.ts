@@ -149,11 +149,7 @@ async function run(): Promise<void> {
         }
       }
     } catch (error: any) {
-      console.log(error)
-      console.log(error.response)
-      console.log(error.response.status)
-      core.setFailed(error.message)
-      stop = true
+      stop = error.response!!.status!! !== 404
     }
 
     if (!stop) await sleep(waitingTime * 1000)
