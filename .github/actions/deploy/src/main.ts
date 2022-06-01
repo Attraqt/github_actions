@@ -76,8 +76,6 @@ async function run(): Promise<void> {
     }
   })
 
-  console.log(`waiting time ${waitingTime}s`)
-
   //sending development call
   try {
     const result = await requestWithAuth(
@@ -118,7 +116,7 @@ async function run(): Promise<void> {
   while (!stop) {
     try {
       const result = await requestWithAuth(
-        'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuse',
+        'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
         {
           token,
           owner,

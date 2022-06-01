@@ -103,7 +103,6 @@ function run() {
                 previews: ['ant-man']
             }
         });
-        console.log(`waiting time ${waitingTime}s`);
         //sending development call
         try {
             const result = yield requestWithAuth('post /repos/{owner}/{repo}/deployments', {
@@ -137,7 +136,7 @@ function run() {
         //getting statuses and checking if running or over
         while (!stop) {
             try {
-                const result = yield requestWithAuth('GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuse', {
+                const result = yield requestWithAuth('GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses', {
                     token,
                     owner,
                     repo,
