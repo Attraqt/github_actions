@@ -144,6 +144,7 @@ async function run(): Promise<void> {
         }
       }
     } catch (error: any) {
+      console.log(error)
       core.setFailed(error.message)
       stop = true
     }
