@@ -76,6 +76,8 @@ async function run(): Promise<void> {
     }
   })
 
+  console.log('waiting time')
+
   //sending development call
   try {
     const result = await requestWithAuth(

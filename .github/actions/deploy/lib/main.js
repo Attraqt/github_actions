@@ -103,6 +103,7 @@ function run() {
                 previews: ['ant-man']
             }
         });
+        console.log("waiting time");
         //sending development call
         try {
             const result = yield requestWithAuth('post /repos/{owner}/{repo}/deployments', {
@@ -142,6 +143,7 @@ function run() {
                     repo,
                     deployment_id: deploymentId
                 });
+                console.log(result);
                 if (result && result.data) {
                     if (result.data.length > 0) {
                         const lastStatus = result.data[0];
@@ -161,6 +163,7 @@ function run() {
                 }
             }
             catch (error) {
+                console.log(error);
                 core.setFailed(error.message);
                 stop = true;
             }
