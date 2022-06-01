@@ -118,7 +118,7 @@ async function run(): Promise<void> {
   while (!stop) {
     try {
       const result = await requestWithAuth(
-        'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
+        'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuse',
         {
           token,
           owner,

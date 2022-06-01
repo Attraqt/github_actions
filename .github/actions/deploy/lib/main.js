@@ -137,7 +137,7 @@ function run() {
         //getting statuses and checking if running or over
         while (!stop) {
             try {
-                const result = yield requestWithAuth('GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses', {
+                const result = yield requestWithAuth('GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuse', {
                     token,
                     owner,
                     repo,
