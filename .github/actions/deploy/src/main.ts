@@ -76,7 +76,7 @@ async function run(): Promise<void> {
     }
   })
 
-  console.log('waiting time')
+  console.log(`waiting time ${waitingTime}s`)
 
   //sending development call
   try {

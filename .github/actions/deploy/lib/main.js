@@ -103,7 +103,7 @@ function run() {
                 previews: ['ant-man']
             }
         });
-        console.log("waiting time");
+        console.log(`waiting time ${waitingTime}s`);
         //sending development call
         try {
             const result = yield requestWithAuth('post /repos/{owner}/{repo}/deployments', {
