@@ -103,4 +103,3 @@ jobs:
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
           task: ${{ env.final_name }}:${{ steps.get_context.outputs.version }}
           required_contexts: <<EMPTY>>
-          waiting_time: 1
