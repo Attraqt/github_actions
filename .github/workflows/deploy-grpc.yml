@@ -94,8 +94,8 @@ jobs:
         run: docker push ${{ steps.get_context.outputs.gateway_image_name }}
         if: inputs.deploy_on_gateway
 
-      - name: Deploy on dev environment
-        uses: maxkomarychev/oction-create-deployment@v0.7.1
+      - name: Deploy
+        uses: Attraqt/github_workflows/.github/actions/deploy@feature/XO-2817-check-jobs-status
         with:
           repo: xo-terragrunt-${{ steps.get_context.outputs.env }}
           ref: master

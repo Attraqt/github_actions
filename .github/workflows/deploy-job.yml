@@ -76,8 +76,9 @@ jobs:
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           --args="--runner=DataflowRunner --project=attraqt-xo --region=europe-west1 --stagingLocation=gs://xo-dataflow/staging --tempLocation=gs://xo-dataflow/tmp --templateLocation=gs://xo-dataflow/templates/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
 
-      - name: Deploy on dev environment
-        uses: maxkomarychev/oction-create-deployment@v0.7.1
+      - name: Deploy
+        id: deploy
+        uses: Attraqt/github_workflows/.github/actions/deploy@feature/XO-2817-check-jobs-status
         with:
           repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           ref: master
