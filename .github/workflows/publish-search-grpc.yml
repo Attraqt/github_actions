@@ -69,7 +69,7 @@ jobs:
             :${{ env.final_name }}:dockerPushImage --console=plain
 
       - name: Deploy
-        uses: Attraqt/github_workflows/.github/actions/deploy@main
+        uses: Attraqt/github_actions/.github/actions/deploy@main
         with:
           required_contexts: <<EMPTY>>
           repo: xo-terragrunt-${{ steps.tag_env.outputs.project }}

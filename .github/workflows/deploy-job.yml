@@ -78,7 +78,7 @@ jobs:
 
       - name: Deploy
         id: deploy
-        uses: Attraqt/github_workflows/.github/actions/deploy@main
+        uses: Attraqt/github_actions/.github/actions/deploy@main
         with:
           repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           ref: master
