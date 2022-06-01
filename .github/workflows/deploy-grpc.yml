@@ -95,7 +95,7 @@ jobs:
         if: inputs.deploy_on_gateway
 
       - name: Deploy
-        uses: Attraqt/github_workflows/.github/actions/deploy@feature/XO-2817-check-jobs-status
+        uses: Attraqt/github_workflows/.github/actions/deploy@main
         with:
           repo: xo-terragrunt-${{ steps.get_context.outputs.env }}
           ref: master
