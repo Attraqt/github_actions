@@ -124,6 +124,9 @@ async function run(): Promise<void> {
           deployment_id: deploymentId!!
         }
       )
+
+      console.log(result)
+
       if (result && result.data) {
         if (result.data.length > 0) {
           const lastStatus = result.data[0]
