@@ -24,7 +24,7 @@ on:
 
 env:
   job_location: search-jobs
-  global_job_name: ${{ env.job_location }}-${{ inputs.job_name }}
+  global_job_name: search-jobs-${{ inputs.job_name }}
 
 jobs:
   publish-job:
