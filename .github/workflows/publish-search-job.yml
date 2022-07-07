@@ -65,17 +65,6 @@ jobs:
           export_default_credentials: true
 
       - name: Upload jar
-        if: ${{ ! inputs.fetch_environment }}
-        uses: google-github-actions/upload-cloud-storage@main
-        with:
-          path: ${{ env.job_location }}/${{ env.global_job_name }}/build/libs/${{ env.global_job_name }}-jar-with-dependencies.jar
-          destination: eb-dataflow-eu/${{ env.global_job_name }}
-          # When using gzip compression during upload, the stored MD5 & CRC32 of the file will be based on the gzipped data,
-          # which breaks integrity checks when downloading the data without gzip
-          # See: https://github.com/googleapis/nodejs-storage/issues/709
-          gzip: false
-
-      - name: Upload jar
         if: inputs.fetch_environment
         uses: google-github-actions/upload-cloud-storage@main
         with:
