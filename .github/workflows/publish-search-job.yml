@@ -48,8 +48,7 @@ jobs:
         if: inputs.fetch_environment
         id: tag_env
         run: |
-          echo "::set-output name=env::$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'testing'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'production'; fi)"
-
+          echo "env=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'testing'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'production'; fi)" >> $GITHUB_OUTPUT
       - name: Build jar
         run: |
           ./gradlew \
@@ -59,7 +58,7 @@ jobs:
             -Pgpr.read.key=${{ secrets.GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN }} \
             ${{ env.job_location }}:${{ env.global_job_name }}:build --console=plain
 
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
           export_default_credentials: true
