@@ -31,10 +31,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch tag history
-        run: git fetch --prune --unshallow
-        if: github.ref == 'refs/heads/master'
-
       - name: Set up cache
         uses: actions/cache@v1
         with:
