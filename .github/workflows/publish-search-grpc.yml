@@ -30,6 +30,11 @@ jobs:
         run: git fetch --prune --unshallow
         if: contains(fromJson('["refs/heads/develop", "refs/heads/master"]'), github.ref)
 
+      - uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('gradle/**') }}
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -45,35 +50,36 @@ jobs:
       - name: Configure docker authentication
         run: gcloud auth configure-docker --quiet
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       # If the commit is tagged, use it. Else, use the commit hash as tag
       # If develop branch, use 'dev' terragrunt project. Else, use 'prod' project
       # If develop branch, use 'dev' environment. If master branch and untagged, use 'staging' environment. Else, use 'prod'
       - name: Get deployment tag, project and environment
-        id: tag_env
+        id: get_context
         run: |
-          echo "::set-output name=tag::$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.final_name }}:currentVersion )"
+          VERSION=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.final_name }}:currentVersion )
+          echo "::set-output name=version::$VERSION"
+          echo "::set-output name=image_name::eu.gcr.io/attraqt-xo/${{ env.final_name }}:$VERSION"
           echo "::set-output name=project::$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'dev' || echo 'prod')"
           echo "::set-output name=env::$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)"
 
-      - name: Build & Publish Docker image
+      - name: Build Docker image
         run: |
           ./gradlew \
             -Pgpr.read.user=search \
             -Pgpr.read.key=${{ secrets.GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN }} \
             -Partifactory.user=${{ secrets.ARTIFACTORY_USER }} \
             -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
-            -Pdocker.tag=${{ steps.tag_env.outputs.tag }} \
-            :${{ env.final_name }}:dockerPushImage --console=plain
+            :${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }} --console=plain
+
+      - name: Push Docker image
+        run: docker push ${{ steps.get_context.outputs.image_name }}
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
         with:
           required_contexts: <<EMPTY>>
-          repo: xo-terragrunt-${{ steps.tag_env.outputs.project }}
+          repo: xo-terragrunt-${{ steps.get_context.outputs.project }}
           ref: master
-          environment: ${{ steps.tag_env.outputs.env }}
+          environment: ${{ steps.get_context.outputs.env }}
           token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
-          task: ${{ env.final_name }}:${{ steps.tag_env.outputs.tag }}
+          task: ${{ env.final_name }}:${{ steps.get_context.outputs.version }}
