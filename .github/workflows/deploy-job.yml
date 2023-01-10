@@ -8,6 +8,9 @@ on:
       job_name:
         required: true
         type: string
+      java_version:
+        type: string
+        default: 11
     secrets:
       GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
         required: true
@@ -42,7 +45,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{ inputs.java_version }}
 
       - name: Install gcloud SDK
         uses: google-github-actions/setup-gcloud@v0
