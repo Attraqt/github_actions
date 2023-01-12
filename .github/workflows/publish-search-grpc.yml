@@ -37,7 +37,7 @@ jobs:
           java-version: '11'
 
       - name: Install gcloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
           export_default_credentials: true
@@ -54,9 +54,9 @@ jobs:
       - name: Get deployment tag, project and environment
         id: tag_env
         run: |
-          echo "::set-output name=tag::$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.final_name }}:currentVersion )"
-          echo "::set-output name=project::$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'dev' || echo 'prod')"
-          echo "::set-output name=env::$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)"
+          echo "tag=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet ${{ env.final_name }}:currentVersion )" >> $GITHUB_OUTPUT
+          echo "project=$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
+          echo "env=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)" >> $GITHUB_OUTPUT
 
       - name: Build & Publish Docker image
         run: |
