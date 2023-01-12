@@ -8,10 +8,9 @@ on:
       service_name:
         required: true
         type: string
-      deploy_on_gateway:
-        required: false
-        type: boolean
-        default: false
+      java_version:
+        type: string
+        default: 11
     secrets:
       GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
         required: true
@@ -47,7 +46,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{ inputs.java_version }}
 
       - name: Install gcloud SDK
         uses: google-github-actions/setup-gcloud@v1
@@ -65,7 +64,6 @@ jobs:
           VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "image_name=eu.gcr.io/attraqt-xo/${{ env.final_name }}:$VERSION" >> $GITHUB_OUTPUT
-          echo "gateway_image_name=eu.gcr.io/attraqt-xo/items-grpc-gateway:$VERSION" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
@@ -83,16 +81,9 @@ jobs:
           --imageName=${{ steps.get_context.outputs.image_name }}
         if: ${{ env.artifactory_password != null }}
 
-      - name: Build gateway Docker image
-        run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.gateway_image_name }}
-        if: inputs.deploy_on_gateway
-
       - name: Push Docker image
         run: docker push ${{ steps.get_context.outputs.image_name }}
 
-      - name: Push gateway Docker image
-        run: docker push ${{ steps.get_context.outputs.gateway_image_name }}
-        if: inputs.deploy_on_gateway
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main

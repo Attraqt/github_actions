@@ -5,6 +5,9 @@ on:
       module_name:
         required: true
         type: string
+      java_version:
+        type: string
+        default: 11
     secrets:
       GH_PACKAGES_READ_ACCESS_TOKEN:
         required: true
@@ -17,7 +20,7 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{ inputs.java_version }}
 
       - name: Run Publish Task
         run: >
