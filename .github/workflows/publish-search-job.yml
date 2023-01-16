@@ -58,10 +58,15 @@ jobs:
             -Pgpr.read.key=${{ secrets.GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN }} \
             ${{ env.job_location }}:${{ env.global_job_name }}:build --console=plain
 
-      - uses: google-github-actions/setup-gcloud@v1
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          service_account_key: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
-          export_default_credentials: true
+          credentials_json: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Install Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
 
       - name: Upload jar
         if: ${{ ! inputs.fetch_environment }}
