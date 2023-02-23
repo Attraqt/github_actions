@@ -16,7 +16,9 @@ on:
         type: string
         default: 17
     secrets:
-      gcp_publisher_service_account_key:
+      gcp_publisher_service_account_key_prod:
+        required: true
+      gcp_publisher_service_account_key_dev:
         required: true
       gh_packages_read_access_token:
         required: true
@@ -50,53 +52,42 @@ jobs:
         with:
           java-version: ${{ inputs.java_version }}
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.gcp_publisher_service_account_key }}
-          create_credentials_file: true
-          export_environment_variables: true
-
-      - name: Install Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-
       - id: get_version_env
         name: Get job version and deployment env
         run: |
           echo "version=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.job_location }}:${{ env.global_job_name }}:currentVersion | tail -n1 )" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: $([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && ${{ secrets.gcp_publisher_service_account_key_prod }} || ${{ secrets.gcp_publisher_service_account_key_dev }})
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Publish Dataflow Template
         run: >
-          publish_dataflow() {
-            PROJECT=$1
-            GCS_PREFIX="gs://$PROJECT-dataflow/jobs/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
+          PROJECT=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && 'xo' || 'xo-dev')
+          GCS_PREFIX="gs://$PROJECT-dataflow/jobs/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
 
-            for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.global_job_name }}/src/main); do
-              MAIN_CLASS=$(basename $MAIN_CLASS_FILE)
-              MAIN_CLASS=${MAIN_CLASS%.*}
+          for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.global_job_name }}/src/main); do
+            MAIN_CLASS=$(basename $MAIN_CLASS_FILE)
+            MAIN_CLASS=${MAIN_CLASS%.*}
 
-              ARGS="--runner=DataflowRunner"
-              ARGS+=" --project=attraqt-$PROJECT"
-              ARGS+=" --region=europe-west1"
-              ARGS+=" --stagingLocation=$GCS_PREFIX/staging"
-              ARGS+=" --tempLocation=$GCS_PREFIX/tmp"
-              ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}}"
+            ARGS="--runner=DataflowRunner"
+            ARGS+=" --project=attraqt-$PROJECT"
+            ARGS+=" --region=europe-west1"
+            ARGS+=" --stagingLocation=$GCS_PREFIX/staging"
+            ARGS+=" --tempLocation=$GCS_PREFIX/tmp"
+            ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}}"
 
-              ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run \
-              -Pmain=$MAIN_CLASS \
-              -Pgpr.read.user=${{ inputs.module_name }} \
-              -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
-              ${{ secrets.extra_gradle_parameters }} \
-              --args="$ARGS"
-            done
-          }
-
-          publish_dataflow "xo-dev"
-        if [ steps.get_version_env.outputs.env == "prod" ]
-        then
-          publish_dataflow "xo"
-        fi
+            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run \
+            -Pmain=$MAIN_CLASS \
+            -Pgpr.read.user=${{ inputs.module_name }} \
+            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
+            ${{ secrets.extra_gradle_parameters }} \
+            --args="$ARGS"
+          done
 
       - name: Deploy
         id: deploy
