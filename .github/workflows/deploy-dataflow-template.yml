@@ -1,4 +1,8 @@
-name: Deploy job
+# This new ci upload dataflow templates in both dev and prod environment
+# also it deploy all main functions (for Streaming and Batch)
+# thus your main class should be called Main if alone, and Batch/Streaming if multiple
+
+name: Deploy Dataflow Template
 on:
   workflow_call:
     inputs:
@@ -12,19 +16,18 @@ on:
         type: string
         default: 17
     secrets:
-      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
+      gcp_publisher_service_account_key:
         required: true
-      GH_PACKAGES_READ_ACCESS_TOKEN:
+      gh_packages_read_access_token:
         required: true
-      GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
+      gh_deployment_creation_access_token:
         required: true
-      ARTIFACTORY_PASSWORD:
+      extra_gradle_parameters:
         required: false
 
 env:
   job_location: ${{ inputs.module_name }}-jobs
   global_job_name: ${{ inputs.module_name }}-jobs-${{ inputs.job_name }}
-  artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
 jobs:
   deploy:
@@ -50,7 +53,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          credentials_json: ${{ secrets.gcp_publisher_service_account_key }}
           create_credentials_file: true
           export_environment_variables: true
 
@@ -60,7 +63,7 @@ jobs:
       - id: get_version_env
         name: Get job version and deployment env
         run: |
-          echo "version=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.job_location }}:${{ env.global_job_name }}:currentVersion | tail -n1 )" >> $GITHUB_OUTPUT
+          echo "version=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.job_location }}:${{ env.global_job_name }}:currentVersion | tail -n1 )" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
 
       - name: Publish Dataflow Template
@@ -83,9 +86,8 @@ jobs:
               ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run \
               -Pmain=$MAIN_CLASS \
               -Pgpr.read.user=${{ inputs.module_name }} \
-              -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
-              -Partifactory.user=travis-npm \
-              -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
+              -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
+              ${{ secrets.extra_gradle_parameters }} \
               --args="$ARGS"
             done
           }
@@ -103,6 +105,6 @@ jobs:
           repo: xo-terragrunt-${{ steps.get_version_env.outputs.env }}
           ref: master
           environment: ${{ steps.get_version_env.outputs.env }}
-          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          token: ${{ secrets.gh_deployment_creation_access_token }}
           task: ${{ env.global_job_name }}:${{ steps.get_version_env.outputs.version }}
           required_contexts: <<EMPTY>>

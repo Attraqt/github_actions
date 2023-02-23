@@ -12,19 +12,18 @@ on:
         type: string
         default: 17
     secrets:
-      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
+      gcp_publisher_service_account_key:
         required: true
-      GH_PACKAGES_READ_ACCESS_TOKEN:
+      gh_packages_read_access_token:
         required: true
-      GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
+      gh_deployment_creation_access_token:
         required: true
-      ARTIFACTORY_PASSWORD:
+      extra_gradle_parameters:
         required: false
 
 env:
   faas_location: ${{ inputs.module_name }}-faas
   final_name: ${{ inputs.module_name }}-faas-${{ inputs.faas_name }}
-  artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
 jobs:
   publish_and_deploy:
@@ -52,14 +51,14 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          credentials_json: ${{ secrets.gcp_publisher_service_account_key }}
           create_credentials_file: true
           export_environment_variables: true
 
       - name: Get docker tag and deployment env
         id: get_context
         run: |
-          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.final_name }}:currentVersion | tail -n1 )
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
 
@@ -67,9 +66,8 @@ jobs:
         run: >
           ./gradlew \
           -Pgpr.read.user=${{ inputs.module_name }} \
-          -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
-          -Partifactory.user=travis \
-          -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
+          -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
+          ${{ secrets.extra_gradle_parameters }} \
           -ParchiveVersion=${{ steps.get_context.outputs.version }} \
           :${{ env.faas_location }}:${{ env.final_name }}:zipFatJar
 
@@ -96,6 +94,6 @@ jobs:
           repo: xo-terragrunt-${{ steps.get_context.outputs.env }}
           ref: master
           environment: ${{ steps.get_context.outputs.env }}
-          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          token: ${{ secrets.gh_deployment_creation_access_token }}
           task: ${{ env.final_name }}:${{ steps.get_context.outputs.version }}
           required_contexts: <<EMPTY>>
