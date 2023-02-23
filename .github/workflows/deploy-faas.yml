@@ -54,11 +54,14 @@ jobs:
           VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.final_name }}:currentVersion | tail -n1 )
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
+          echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
+          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})"
+
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: $([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && ${{ secrets.gcp_publisher_service_account_key_prod }} || ${{ secrets.gcp_publisher_service_account_key_dev }})
+          credentials_json: ${{ steps.get_version_env.outputs.google_credentials }}
           create_credentials_file: true
           export_environment_variables: true
 
@@ -72,11 +75,10 @@ jobs:
           :${{ env.faas_location }}:${{ env.final_name }}:zipFatJar
 
       - name: Upload Zip Jar
-        run: >
-          PROJECT=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && 'xo' || 'xo-dev')
-          gsutil cp  \
-          ./${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip \
-          gs://$PROJECT-cloud-functions/${{ env.final_name }}/${{ steps.get_version_env.outputs.version }}
+        uses: 'google-github-actions/upload-cloud-storage@v1'
+        with:
+          path: './${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip'
+          destination: '${{ steps.get_version_env.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}/${{ steps.get_version_env.outputs.version }}'
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
