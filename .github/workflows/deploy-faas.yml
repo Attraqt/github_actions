@@ -1,0 +1,101 @@
+name: Deploy Cloud Functions
+on:
+  workflow_call:
+    inputs:
+      module_name:
+        required: true
+        type: string
+      faas_name:
+        required: true
+        type: string
+      java_version:
+        type: string
+        default: 17
+    secrets:
+      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
+        required: true
+      GH_PACKAGES_READ_ACCESS_TOKEN:
+        required: true
+      GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
+        required: true
+      ARTIFACTORY_PASSWORD:
+        required: false
+
+env:
+  faas_location: ${{ inputs.module_name }}-faas
+  final_name: ${{ inputs.module_name }}-faas-${{ inputs.faas_name }}
+  artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+jobs:
+  publish_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Fetch tag history
+        run: git fetch --prune --unshallow
+        if: github.ref == 'refs/heads/master'
+
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('gradle/**') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ inputs.java_version }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Get docker tag and deployment env
+        id: get_context
+        run: |
+          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
+
+      - name: Build Zip fat jar
+        run: >
+          ./gradlew \
+          -Pgpr.read.user=${{ inputs.module_name }} \
+          -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
+          -Partifactory.user=travis \
+          -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
+          -ParchiveVersion=${{ steps.get_context.outputs.version }} \
+          :${{ env.faas_location }}:${{ env.final_name }}:zipFatJar
+
+      - name: Upload Zip Jar
+        run: >
+          upload_zip() {
+            PROJECT=$1
+            GCS_PATH="gs://$PROJECT-cloud-functions/${{ env.final_name }}/${{ steps.get_version_env.outputs.version }}"
+
+            gsutil cp  \
+            ./${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip \
+            $GCS_PATH
+          }
+
+          upload_zip "xo-dev"
+          if [ steps.get_version_env.outputs.env == "prod" ]
+          then
+            upload_zip "xo"
+          fi
+
+      - name: Deploy
+        uses: Attraqt/github_actions/.github/actions/deploy@main
+        with:
+          repo: xo-terragrunt-${{ steps.get_context.outputs.env }}
+          ref: master
+          environment: ${{ steps.get_context.outputs.env }}
+          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          task: ${{ env.final_name }}:${{ steps.get_context.outputs.version }}
+          required_contexts: <<EMPTY>>
