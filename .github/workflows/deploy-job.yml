@@ -1,3 +1,5 @@
+# This deployment is now deprecated and you should be using deploy-dataflow-template
+
 name: Deploy job
 on:
   workflow_call:
