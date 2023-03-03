@@ -68,8 +68,9 @@ jobs:
           export_environment_variables: true
 
       - name: Publish Dataflow Template
-        run: >
+        run: |
           GCS_PREFIX="gs://${{ steps.get_version_env.outputs.bucket_prefix }}-dataflow/jobs/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
+
           for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.global_job_name }}/src/main); do
             MAIN_CLASS=$(basename $MAIN_CLASS_FILE)
             MAIN_CLASS=${MAIN_CLASS%.*}
