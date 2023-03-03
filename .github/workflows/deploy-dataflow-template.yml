@@ -34,9 +34,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./items-jobs
     steps:
       - uses: actions/checkout@v3
         with:
@@ -71,10 +68,10 @@ jobs:
           export_environment_variables: true
 
       - name: Publish Dataflow Template
-        run: >
+        run: |
           GCS_PREFIX="gs://${{ steps.get_version_env.outputs.bucket_prefix }}-dataflow/jobs/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
 
-          for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.global_job_name }}/src/main); do
+          for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.job_location }}/${{ env.global_job_name }}/src/main); do
             MAIN_CLASS=$(basename $MAIN_CLASS_FILE)
             MAIN_CLASS=${MAIN_CLASS%.*}
 
@@ -87,11 +84,11 @@ jobs:
 
             echo "ARGS: $ARGS"
 
-            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run \
-            -Pmain=$MAIN_CLASS \
-            -Pgpr.read.user=${{ inputs.module_name }} \
-            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
-            ${{ secrets.extra_gradle_parameters }} \
+            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run
+            -Pmain=$MAIN_CLASS
+            -Pgpr.read.user=${{ inputs.module_name }}
+            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }}
+            ${{ secrets.extra_gradle_parameters }}
             --args="$ARGS"
           done
 
