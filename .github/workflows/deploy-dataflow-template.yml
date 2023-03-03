@@ -84,12 +84,7 @@ jobs:
 
             echo "ARGS: $ARGS"
 
-            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run
-            -Pmain=$MAIN_CLASS
-            -Pgpr.read.user=${{ inputs.module_name }}
-            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }}
-            ${{ secrets.extra_gradle_parameters }}
-            --args="$ARGS"
+            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run -Pmain=$MAIN_CLASS -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ secrets.extra_gradle_parameters }} --args="$ARGS"
           done
 
       - name: Deploy
