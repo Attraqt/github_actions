@@ -56,8 +56,8 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_project_id=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo '227734476075' || echo '183854350784')" >> $GITHUB_OUTPUT
-          echo "google_project_name=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev')" >> $GITHUB_OUTPUT
+          echo "google_project_id=$([ '${{ steps.get_context.outputs.env }}' == 'prod' ] && echo '227734476075' || echo '183854350784')" >> $GITHUB_OUTPUT
+          echo "google_project_name=$([ '${{ steps.get_context.outputs.env }}' == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev')" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
@@ -78,7 +78,7 @@ jobs:
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
           path: './${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip'
-          destination: '${{ steps.get_version_env.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}/${{ steps.get_version_env.outputs.version }}'
+          destination: '${{ steps.get_context.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}/${{ steps.get_context.outputs.version }}'
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
