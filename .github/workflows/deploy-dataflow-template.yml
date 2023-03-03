@@ -80,7 +80,7 @@ jobs:
             ARGS+=" --region=europe-west1"
             ARGS+=" --stagingLocation=$GCS_PREFIX/staging"
             ARGS+=" --tempLocation=$GCS_PREFIX/tmp"
-            ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}}"
+            ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}"
 
             echo "ARGS: $ARGS"
 
