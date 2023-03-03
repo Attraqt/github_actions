@@ -12,10 +12,6 @@ on:
         type: string
         default: 17
     secrets:
-      gcp_publisher_service_account_key_prod:
-        required: true
-      gcp_publisher_service_account_key_dev:
-        required: true
       gh_packages_read_access_token:
         required: true
       gh_deployment_creation_access_token:
@@ -29,6 +25,9 @@ env:
 
 jobs:
   publish_and_deploy:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -57,15 +56,15 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})"
-
+          echo "google_project_id=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo '227734476075' || echo '183854350784')" >> $GITHUB_OUTPUT
+          echo "google_project_name=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev'" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ steps.get_version_env.outputs.google_credentials }}
-          create_credentials_file: true
-          export_environment_variables: true
+          token_format: access_token
+          workload_identity_provider: projects/${{ steps.get_context.outputs.google_project_id }}/locations/global/workloadIdentityPools/github/providers/github-actions
+          service_account: ga-publisher@${{ steps.get_context.outputs.google_project_name }}.iam.gserviceaccount.com
 
       - name: Build Zip fat jar
         run: >
