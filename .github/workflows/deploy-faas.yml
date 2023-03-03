@@ -12,7 +12,9 @@ on:
         type: string
         default: 17
     secrets:
-      gcp_publisher_service_account_key:
+      gcp_publisher_service_account_key_prod:
+        required: true
+      gcp_publisher_service_account_key_dev:
         required: true
       gh_packages_read_access_token:
         required: true
