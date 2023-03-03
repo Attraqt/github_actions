@@ -57,13 +57,12 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})"
-
+          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ steps.get_version_env.outputs.google_credentials }}
+          workload_identity_provider: ${{ steps.get_version_env.outputs.google_credentials }}
           create_credentials_file: true
           export_environment_variables: true
 
