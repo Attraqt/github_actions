@@ -71,7 +71,7 @@ jobs:
           export_environment_variables: true
 
       - name: Publish Dataflow Template
-        run: |
+        run: >
           GCS_PREFIX="gs://${{ steps.get_version_env.outputs.bucket_prefix }}-dataflow/jobs/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
 
           for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.global_job_name }}/src/main); do
@@ -85,11 +85,13 @@ jobs:
             ARGS+=" --tempLocation=$GCS_PREFIX/tmp"
             ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}}"
 
-            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run
-            -Pmain=$MAIN_CLASS
-            -Pgpr.read.user=${{ inputs.module_name }}
-            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }}
-            ${{ secrets.extra_gradle_parameters }}
+            echo "ARGS: $ARGS"
+
+            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run \
+            -Pmain=$MAIN_CLASS \
+            -Pgpr.read.user=${{ inputs.module_name }} \
+            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
+            ${{ secrets.extra_gradle_parameters }} \
             --args="$ARGS"
           done
 
