@@ -76,7 +76,7 @@ jobs:
             MAIN_CLASS=${MAIN_CLASS%.*}
 
             ARGS="--runner=DataflowRunner"
-            ARGS+=" --project=attraqt-$PROJECT"
+            ARGS+=" --project=attraqt-${{ steps.get_version_env.outputs.bucket_prefix }}"
             ARGS+=" --region=europe-west1"
             ARGS+=" --stagingLocation=$GCS_PREFIX/staging"
             ARGS+=" --tempLocation=$GCS_PREFIX/tmp"
