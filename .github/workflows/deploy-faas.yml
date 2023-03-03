@@ -57,7 +57,7 @@ jobs:
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
           echo "google_project_id=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo '227734476075' || echo '183854350784')" >> $GITHUB_OUTPUT
-          echo "google_project_name=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev'" >> $GITHUB_OUTPUT
+          echo "google_project_name=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev')" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
