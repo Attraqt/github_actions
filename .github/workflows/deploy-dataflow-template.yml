@@ -58,7 +58,7 @@ jobs:
           echo "version=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.job_location }}:${{ env.global_job_name }}:currentVersion | tail -n1 )" >> $GITHUB_OUTPUT
           echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})"
+          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo '${{ secrets.gcp_publisher_service_account_key_prod }}' || echo '${{ secrets.gcp_publisher_service_account_key_dev }}')" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
@@ -68,25 +68,23 @@ jobs:
           export_environment_variables: true
 
       - name: Publish Dataflow Template
-        run: >
+        run: |
           GCS_PREFIX="gs://${{ steps.get_version_env.outputs.bucket_prefix }}-dataflow/jobs/${{ env.global_job_name }}/${{ steps.get_version_env.outputs.version }}"
-          for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.global_job_name }}/src/main); do
+
+          for MAIN_CLASS_FILE in $(grep -lrE "fun main\b" --include="*.kt" ${{ env.job_location }}/${{ env.global_job_name }}/src/main); do
             MAIN_CLASS=$(basename $MAIN_CLASS_FILE)
             MAIN_CLASS=${MAIN_CLASS%.*}
 
             ARGS="--runner=DataflowRunner"
-            ARGS+=" --project=attraqt-$PROJECT"
+            ARGS+=" --project=attraqt-${{ steps.get_version_env.outputs.bucket_prefix }}"
             ARGS+=" --region=europe-west1"
             ARGS+=" --stagingLocation=$GCS_PREFIX/staging"
             ARGS+=" --tempLocation=$GCS_PREFIX/tmp"
-            ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}}"
+            ARGS+=" --templateLocation=$GCS_PREFIX/templates/${MAIN_CLASS,,}"
 
-            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run \
-            -Pmain=$MAIN_CLASS \
-            -Pgpr.read.user=${{ inputs.module_name }} \
-            -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} \
-            ${{ secrets.extra_gradle_parameters }} \
-            --args="$ARGS"
+            echo "ARGS: $ARGS"
+
+            ./gradlew :${{ env.job_location }}:${{ env.global_job_name }}:run -Pmain=$MAIN_CLASS -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ secrets.extra_gradle_parameters }} --args="$ARGS"
           done
 
       - name: Deploy
