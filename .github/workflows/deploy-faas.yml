@@ -78,7 +78,7 @@ jobs:
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
           path: './${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip'
-          destination: '${{ steps.get_version_env.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}/${{ steps.get_version_env.outputs.version }}.zip'
+          destination: '${{ steps.get_context.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}/${{ steps.get_context.outputs.version }}.zip'
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
