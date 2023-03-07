@@ -74,11 +74,17 @@ jobs:
           -ParchiveVersion=${{ steps.get_context.outputs.version }}
           ${{ secrets.extra_gradle_parameters }}
 
+      - name: Rename zip 
+        run: >
+          mv ./${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip
+          ./${{ steps.get_context.outputs.version }}.zip
+
       - name: Upload Zip Jar
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
-          path: './${{ env.faas_location }}/${{ env.final_name }}/build/distributions/${{ env.final_name }}-${{ steps.get_context.outputs.version }}.zip'
-          destination: '${{ steps.get_context.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}/${{ steps.get_context.outputs.version }}.zip'
+          path: './${{ steps.get_context.outputs.version }}.zip'
+          destination: '${{ steps.get_context.outputs.bucket_prefix }}-cloud-functions/${{ env.final_name }}'
+          gzip: false
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
