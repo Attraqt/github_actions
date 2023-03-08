@@ -55,10 +55,12 @@ jobs:
       - id: get_version_env
         name: Get job version and deployment env
         run: |
-          echo "version=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.job_location }}:${{ env.global_job_name }}:currentVersion | tail -n1 )" >> $GITHUB_OUTPUT
-          echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
-          echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ '${{ steps.get_version_env.outputs.env }}' == 'prod' ] && echo '${{ secrets.gcp_publisher_service_account_key_prod }}' || echo '${{ secrets.gcp_publisher_service_account_key_dev }}')" >> $GITHUB_OUTPUT
+          ENV=$([ '${{ github.ref }}' == 'refs/heads/master' ] && 'dev' || 'prod' )
+          VERSION=$([ $ENV == 'dev' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          echo "env=$ENV" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
+          echo "google_credentials=$([ $ENV == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})"
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1

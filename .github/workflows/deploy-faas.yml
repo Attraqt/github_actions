@@ -52,12 +52,13 @@ jobs:
       - name: Get docker tag and deployment env
         id: get_context
         run: |
-          VERSION=$([ '${{ github.ref }}' == 'refs/heads/master' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          ENV=$([ '${{ github.ref }}' == 'refs/heads/master' ] && 'dev' || 'prod' )
+          VERSION=$([ $ENV == 'dev' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          echo "env=$ENV" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "env=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod')" >> $GITHUB_OUTPUT
-          echo "bucket_prefix=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_project_id=$([ '${{ steps.get_context.outputs.env }}' == 'prod' ] && echo '227734476075' || echo '183854350784')" >> $GITHUB_OUTPUT
-          echo "google_project_name=$([ '${{ steps.get_context.outputs.env }}' == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev')" >> $GITHUB_OUTPUT
+          echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
+          echo "google_project_id=$([ $ENV == 'prod' ] && echo '227734476075' || echo '183854350784')" >> $GITHUB_OUTPUT
+          echo "google_project_name=$([ $ENV == 'prod' ] && echo 'attraqt-xo' || echo 'attraqt-xo-dev')" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
