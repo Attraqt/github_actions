@@ -60,7 +60,7 @@ jobs:
           echo "env=$ENV" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ $ENV == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})"
+          echo "google_credentials=$([ $ENV == 'prod' ] && echo ${{ secrets.gcp_publisher_service_account_key_prod }} || echo ${{ secrets.gcp_publisher_service_account_key_dev }})" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
