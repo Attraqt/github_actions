@@ -53,7 +53,7 @@ jobs:
         id: get_context
         run: |
           ENV=$([ '${{ github.ref }}' == 'refs/heads/master' ] && echo 'dev' || echo 'prod' )
-          VERSION=$([ $ENV == 'dev' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} :${{ env.faas_location }}:${{ env.final_name }}:currentVersion | tail -n1 )
+          VERSION=$([ $ENV == 'dev' ] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.gh_packages_read_access_token }} ${{ env.faas_location }}:${{ env.final_name }}:currentVersion | tail -n1 )
           echo "env=$ENV" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
