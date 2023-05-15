@@ -122,7 +122,7 @@ jobs:
             --image-gcr-path "europe-west1-docker.pkg.dev//${{ steps.tag_env.outputs.env }}/docker/dataflow-templates/${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}" \
             --sdk-language "JAVA" \
             --flex-template-base-image ${{ inputs.flex_template_base_image }} \
-            --metadata-file "${{ env.job_location }}/${{ env.global_job_name }}/src/main/resources/metadata.json" \
+            --metadata-file "${{ env.job_location }}/${{ env.global_job_name }}/src/main/resources/template.json" \
             --jar "${{ env.job_location }}/${{ env.global_job_name }}/build/libs/${{ env.global_job_name }}-jar-with-dependencies.jar" \
             --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="${{ inputs.flex_template_main_class }}
 
