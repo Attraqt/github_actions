@@ -119,7 +119,7 @@ jobs:
         if: ${{ inputs.flex_template }}
         run: |
           gcloud dataflow flex-template build gs://${{ steps.tag_env.outputs.bucket_prefix }}-dataflow/templates/${{ env.global_job_name }}/${{ steps.tag_env.outputs.version }}/template.json \
-            --image-gcr-path "europe-west1-docker.pkg.dev//${{ steps.tag_env.outputs.env }}/docker/dataflow-templates/${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}" \
+            --image-gcr-path "europe-west1-docker.pkg.dev/${{ steps.tag_env.outputs.google_project }}/docker/dataflow-templates/${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}" \
             --sdk-language "JAVA" \
             --flex-template-base-image ${{ inputs.flex_template_base_image }} \
             --metadata-file "${{ env.job_location }}/${{ env.global_job_name }}/src/main/resources/template.json" \
