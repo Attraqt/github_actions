@@ -2,6 +2,17 @@ name: Publish search job
 on:
   workflow_call:
     inputs:
+      flex_template:
+        required: false
+        type: boolean
+        default: false
+      flex_template_main_class:
+        required: false
+        type: string
+      flex_template_base_image:
+        required: false
+        type: string
+        default: gcr.io/dataflow-templates-base/java17-template-launcher-base:flex_templates_base_image_release_20230508_RC00
       job_name:
         required: true
         type: string
@@ -19,7 +30,11 @@ on:
         required: true
       GH_PACKAGES_ATTRAQT_READ_ACCESS_TOKEN:
         required: true
-      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
+      GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
+        required: true
+      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD:
+        required: true
+      GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV:
         required: true
 
 env:
@@ -48,7 +63,17 @@ jobs:
         if: inputs.fetch_environment
         id: tag_env
         run: |
-          echo "env=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'testing'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'production'; fi)" >> $GITHUB_OUTPUT
+          ENV=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)
+          GOOGLE_PROJECT=$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'attraqt-xo-dev' || echo 'attraqt-xo')
+          VERSION=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          TERRAGRUNT_PROJECT=$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'xo-terragrunt-dev' || echo 'xo-terragrunt-prod')
+          echo "env=$ENV" >> $GITHUB_OUTPUT
+          echo "google_project=$GOOGLE_PROJECT" >> $GITHUB_OUTPUT
+          echo "google_credentials=$([ $GOOGLE_PROJECT == 'attraqt-xo' ] && echo ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD }} || echo ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV }})" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
+          echo "terragrunt_project=$TERRAGRUNT_PROJECT" >> $GITHUB_OUTPUT
+
       - name: Build jar
         run: |
           ./gradlew \
@@ -61,7 +86,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY }}
+          credentials_json: ${{ steps.tag_env.outputs.google_credentials }}
           create_credentials_file: true
           export_environment_variables: true
 
@@ -69,7 +94,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
 
       - name: Upload jar
-        if: ${{ ! inputs.fetch_environment }}
+        if: ${{ !inputs.flex_template && ! inputs.fetch_environment }}
         uses: google-github-actions/upload-cloud-storage@main
         with:
           path: ${{ env.job_location }}/${{ env.global_job_name }}/build/libs/${{ env.global_job_name }}-jar-with-dependencies.jar
@@ -80,7 +105,7 @@ jobs:
           gzip: false
 
       - name: Upload jar
-        if: inputs.fetch_environment
+        if: ${{ !inputs.flex_template && inputs.fetch_environment }}
         uses: google-github-actions/upload-cloud-storage@main
         with:
           path: ${{ env.job_location }}/${{ env.global_job_name }}/build/libs/${{ env.global_job_name }}-jar-with-dependencies.jar
@@ -89,3 +114,26 @@ jobs:
           # which breaks integrity checks when downloading the data without gzip
           # See: https://github.com/googleapis/nodejs-storage/issues/709
           gzip: false
+
+      - name: Build Flex Template
+        if: ${{ inputs.flex_template }}
+        run: |
+          gcloud dataflow flex-template build gs://${{ steps.tag_env.outputs.bucket_prefix }}-dataflow/templates/${{ env.global_job_name }}/${{ steps.tag_env.outputs.version }}/template.json \
+            --image-gcr-path "europe-west1-docker.pkg.dev//${{ steps.tag_env.outputs.env }}/docker/dataflow-templates/${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}" \
+            --sdk-language "JAVA" \
+            --flex-template-base-image ${{ inputs.flex_template_base_image }} \
+            --metadata-file "${{ env.job_location }}/${{ env.global_job_name }}/src/main/resources/template.json" \
+            --jar "${{ env.job_location }}/${{ env.global_job_name }}/build/libs/${{ env.global_job_name }}-jar-with-dependencies.jar" \
+            --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="${{ inputs.flex_template_main_class }}
+
+      - name: Deploy
+        id: deploy
+        if: ${{ inputs.flex_template }}
+        uses: Attraqt/github_actions/.github/actions/deploy@main
+        with:
+          repo: ${{ steps.tag_env.outputs.terragrunt_project }}
+          ref: master
+          environment: ${{ steps.tag_env.outputs.env }}
+          token: ${{ secrets.GH_DEPLOYMENT_CREATION_ACCESS_TOKEN }}
+          task: ${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}
+          required_contexts: <<EMPTY>>
