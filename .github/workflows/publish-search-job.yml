@@ -127,7 +127,7 @@ jobs:
             --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="${{ inputs.flex_template_main_class }}" \
             --additional-user-labels attraqt-product=xo \
             --additional-user-labels attraqt-environment=${{ steps.tag_env.outputs.env }} \
-            --additional-user-labels attraqt-ownerteam=xo-search \`
+            --additional-user-labels attraqt-ownerteam=xo-search \
             --additional-user-labels attraqt-component=search \
             --additional-user-labels attraqt-subcomponent=${{ env.global_job_name }} \
             --additional-user-labels attraqt-version=${{ steps.tag_env.outputs.version }}
