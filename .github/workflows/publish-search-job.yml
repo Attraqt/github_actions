@@ -69,7 +69,7 @@ jobs:
           TERRAGRUNT_PROJECT=$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'xo-terragrunt-dev' || echo 'xo-terragrunt-prod')
           echo "env=$ENV" >> $GITHUB_OUTPUT
           echo "google_project=$GOOGLE_PROJECT" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ $GOOGLE_PROJECT == 'attraqt-xo' ] && echo ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD }} || echo ${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV }})" >> $GITHUB_OUTPUT
+          echo "google_credentials=$([ $GOOGLE_PROJECT == 'attraqt-xo' ] && echo '${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD }}' || echo '${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV }}')" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
           echo "terragrunt_project=$TERRAGRUNT_PROJECT" >> $GITHUB_OUTPUT
