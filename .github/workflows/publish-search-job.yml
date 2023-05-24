@@ -64,15 +64,17 @@ jobs:
         id: tag_env
         run: |
           ENV=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)
-          GOOGLE_PROJECT=$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'attraqt-xo-dev' || echo 'attraqt-xo')
           VERSION=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
-          TERRAGRUNT_PROJECT=$([ '${{ github.ref }}' == 'refs/heads/develop' ] && echo 'xo-terragrunt-dev' || echo 'xo-terragrunt-prod')
+          TERRAGRUNT_PROJECT=$([ $ENV == 'dev' ] && echo 'xo-terragrunt-dev' || echo 'xo-terragrunt-prod')
+          BUCKET_PREFIX=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')
+          GOOGLE_CREDENTIALS=$([ $ENV == 'dev' ] && echo "${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV }}" || echo "${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD }}")
+          GCR_REPOSITORY=$([ $ENV == 'dev' ] && echo 'europe-west1-docker.pkg.dev/attraqt-xo-dev/docker' || echo 'europe-docker.pkg.dev/attraqt-xo/docker')
           echo "env=$ENV" >> $GITHUB_OUTPUT
-          echo "google_project=$GOOGLE_PROJECT" >> $GITHUB_OUTPUT
-          echo "google_credentials=$([ $GOOGLE_PROJECT == 'attraqt-xo' ] && echo '${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD }}' || echo '${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV }}')" >> $GITHUB_OUTPUT
+          echo "google_credentials=$GOOGLE_CREDENTIALS" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "bucket_prefix=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')" >> $GITHUB_OUTPUT
+          echo "bucket_prefix=$BUCKET_PREFIX" >> $GITHUB_OUTPUT
           echo "terragrunt_project=$TERRAGRUNT_PROJECT" >> $GITHUB_OUTPUT
+          echo "gcr_repository=$GCR_REPOSITORY" >> $GITHUB_OUTPUT
 
       - name: Build jar
         run: |
@@ -119,7 +121,7 @@ jobs:
         if: ${{ inputs.flex_template }}
         run: |
           gcloud dataflow flex-template build gs://${{ steps.tag_env.outputs.bucket_prefix }}-dataflow/templates/${{ env.global_job_name }}/${{ steps.tag_env.outputs.version }}/template.json \
-            --image-gcr-path "europe-west1-docker.pkg.dev/${{ steps.tag_env.outputs.google_project }}/docker/dataflow-templates/${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}" \
+            --image-gcr-path "${{ steps.tag_env.outputs.gcr_repository }}/dataflow-templates/${{ env.global_job_name }}:${{ steps.tag_env.outputs.version }}" \
             --sdk-language "JAVA" \
             --flex-template-base-image ${{ inputs.flex_template_base_image }} \
             --metadata-file "${{ env.job_location }}/${{ env.global_job_name }}/src/main/resources/template.json" \
