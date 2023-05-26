@@ -64,7 +64,7 @@ jobs:
         id: tag_env
         run: |
           ENV=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)
-          VERSION=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          VERSION=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.global_job_name }}:currentVersion | tail -n1 )
           VERSION_LABEL=${VERSION//./-}
           TERRAGRUNT_PROJECT=$([ $ENV == 'dev' ] && echo 'xo-terragrunt-dev' || echo 'xo-terragrunt-prod')
           BUCKET_PREFIX=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')
