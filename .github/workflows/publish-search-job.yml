@@ -65,6 +65,7 @@ jobs:
         run: |
           ENV=$(if [ '${{ github.ref }}' == 'refs/heads/develop' ]; then echo 'dev'; elif [ '${{ github.ref }}' == 'refs/heads/master' ]; then echo 'staging'; else echo 'prod'; fi)
           VERSION=$([[ '${{ github.ref }}' == refs/heads/* ]] && git rev-parse --short HEAD || ./gradlew --quiet --console=plain -Prelease.quiet -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:currentVersion | tail -n1 )
+          VERSION_LABEL=${VERSION//./-}
           TERRAGRUNT_PROJECT=$([ $ENV == 'dev' ] && echo 'xo-terragrunt-dev' || echo 'xo-terragrunt-prod')
           BUCKET_PREFIX=$([ $ENV == 'dev' ] && echo 'xo-dev' || echo 'xo')
           GOOGLE_CREDENTIALS=$([ $ENV == 'dev' ] && echo "${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_DEV }}" || echo "${{ secrets.GCP_PUBLISHER_SERVICE_ACCOUNT_KEY_PROD }}")
@@ -72,6 +73,7 @@ jobs:
           echo "env=$ENV" >> $GITHUB_OUTPUT
           echo "google_credentials=$GOOGLE_CREDENTIALS" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_label=$VERSION_LABEL" >> $GITHUB_OUTPUT
           echo "bucket_prefix=$BUCKET_PREFIX" >> $GITHUB_OUTPUT
           echo "terragrunt_project=$TERRAGRUNT_PROJECT" >> $GITHUB_OUTPUT
           echo "gcr_repository=$GCR_REPOSITORY" >> $GITHUB_OUTPUT
@@ -132,7 +134,7 @@ jobs:
             --additional-user-labels attraqt-ownerteam=xo-search \
             --additional-user-labels attraqt-component=search \
             --additional-user-labels attraqt-subcomponent=${{ env.global_job_name }} \
-            --additional-user-labels attraqt-version=${{ steps.tag_env.outputs.version }}
+            --additional-user-labels attraqt-version=${{ steps.tag_env.outputs.version_label }}
 
       - name: Deploy
         id: deploy
