@@ -28,7 +28,6 @@ jobs:
 
       - name: Fetch tag history
         run: git fetch --prune --unshallow
-        if: contains(fromJson('["refs/heads/develop", "refs/heads/master"]'), github.ref)
 
       - name: Set up JDK
         uses: actions/setup-java@v3
