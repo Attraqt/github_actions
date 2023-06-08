@@ -52,6 +52,9 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('gradle/**') }}
 
+      - name: Fetch tag history
+        run: git fetch --prune --unshallow
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
