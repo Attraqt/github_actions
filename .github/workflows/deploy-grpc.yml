@@ -18,6 +18,8 @@ on:
         required: true
       GH_DEPLOYMENT_CREATION_ACCESS_TOKEN:
         required: true
+      ARTIFACTORY_USER:
+        required: false
       ARTIFACTORY_PASSWORD:
         required: false
 
@@ -78,7 +80,7 @@ jobs:
           ./gradlew 
           -Pgpr.read.user=${{ inputs.module_name }} 
           -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }}
-          -Partifactory.user=travis
+          -Partifactory.user=${{ secrets.ARTIFACTORY_USER }}
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           ${{ env.final_name }}:bootBuildImage 
           --imageName=${{ steps.get_context.outputs.image_name }}
