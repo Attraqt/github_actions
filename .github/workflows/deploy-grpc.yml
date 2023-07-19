@@ -11,6 +11,9 @@ on:
       java_version:
         type: string
         default: 11
+      legacy_docker_build_push:
+        type: boolean
+        default: false
     secrets:
       GCP_PUBLISHER_SERVICE_ACCOUNT_KEY:
         required: true
@@ -73,7 +76,7 @@ jobs:
 
       - name: Build Docker image
         run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }}
-        if: ${{ env.artifactory_password == null }}
+        if: ${{ !env.legacy_docker_build_push && env.artifactory_password == null }}
 
       - name: Build Docker image
         run: > 
@@ -84,11 +87,22 @@ jobs:
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           ${{ env.final_name }}:bootBuildImage 
           --imageName=${{ steps.get_context.outputs.image_name }}
-        if: ${{ env.artifactory_password != null }}
+        if: ${{ !env.legacy_docker_build_push && env.artifactory_password != null }}
 
       - name: Push Docker image
         run: docker push ${{ steps.get_context.outputs.image_name }}
+        if: ${{ !env.legacy_docker_build_push }}
 
+      - name: Build & Push Docker image (using gradle plugin)
+        run: |
+          ./gradlew \
+            -Pgpr.read.user=${{ inputs.module_name }}  \
+            -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
+            -Partifactory.user=${{ secrets.ARTIFACTORY_USER }} \
+            -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
+            -Pdocker.tag=${{ steps.tag_env.outputs.version }} \
+            :${{ env.final_name }}:dockerPushImage --console=plain
+        if: ${{ env.legacy_docker_build_push }}
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
