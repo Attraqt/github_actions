@@ -76,7 +76,7 @@ jobs:
 
       - name: Build Docker image
         run: ./gradlew -Pgpr.read.user=${{ inputs.module_name }} -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} ${{ env.final_name }}:bootBuildImage --imageName=${{ steps.get_context.outputs.image_name }}
-        if: ${{ env.legacy_docker_build_push != 'true' && env.artifactory_password == null }}
+        if: ${{ inputs.legacy_docker_build_push != 'true' && env.artifactory_password == null }}
 
       - name: Build Docker image
         run: > 
@@ -87,11 +87,11 @@ jobs:
           -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }}
           ${{ env.final_name }}:bootBuildImage 
           --imageName=${{ steps.get_context.outputs.image_name }}
-        if: ${{ env.legacy_docker_build_push != 'true' && env.artifactory_password != null }}
+        if: ${{ inputs.legacy_docker_build_push != 'true' && env.artifactory_password != null }}
 
       - name: Push Docker image
         run: docker push ${{ steps.get_context.outputs.image_name }}
-        if: ${{ env.legacy_docker_build_push != 'true' }}
+        if: ${{ inputs.legacy_docker_build_push != 'true' }}
 
       - name: Build & Push Docker image (using gradle plugin)
         run: |
@@ -102,7 +102,7 @@ jobs:
             -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
             -Pdocker.tag=${{ steps.tag_env.outputs.version }} \
             :${{ env.final_name }}:dockerPushImage --console=plain
-        if: ${{ env.legacy_docker_build_push == 'true' }}
+        if: ${{ inputs.legacy_docker_build_push == 'true' }}
 
       - name: Deploy
         uses: Attraqt/github_actions/.github/actions/deploy@main
