@@ -100,7 +100,7 @@ jobs:
             -Pgpr.read.key=${{ secrets.GH_PACKAGES_READ_ACCESS_TOKEN }} \
             -Partifactory.user=${{ secrets.ARTIFACTORY_USER }} \
             -Partifactory.password=${{ secrets.ARTIFACTORY_PASSWORD }} \
-            -Pdocker.tag=${{ steps.tag_env.outputs.version }} \
+            -Pdocker.tag=${{ steps.get_context.outputs.version }} \
             :${{ env.final_name }}:dockerPushImage --console=plain
         if: ${{ inputs.legacy_docker_build_push == 'true' }}
 
